@@ -28,5 +28,8 @@ def findAll(session: SessionDep):
     posts = board_service.findAll(session)
     return posts
 
-
+@router.delete("/board/{id}")
+def deleteById(id: int, session: SessionDep):
+    response = board_service.deleteById(id, session)
+    return response
 
