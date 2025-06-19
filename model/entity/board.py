@@ -8,3 +8,8 @@ class Board(SQLModel, table=True):
 class BoardCreate(SQLModel):
     name: str
     image: str
+
+class BoardRead(SQLModel):
+    id: int
+    name :str
+    image: str
