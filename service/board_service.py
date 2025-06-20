@@ -12,9 +12,18 @@ def findById(id: int, session: Session):
     post = session.query(Board).filter(Board.id == id).first()
     return post
 
-def findAll(session: Session):
-    allPosts = session.query(Board).all()
-    return allPosts
+def findAll(session: Session, page: int = 1, limit: int = 10):
+    if page <= 0:
+        return {"error": "페이지는 1부터 시작합니다."}
+    else:
+        offset = (page - 1) * 10
+        total = session.query(Board).count()
+        allPosts = session.query(Board).offset(offset).limit(limit).all()
+        return {
+            "total": total,
+            "page": page,
+            "posts": allPosts
+        }
 
 def deleteById(id: int, session: Session):
     post = session.query(Board).filter(Board.id == id).first()

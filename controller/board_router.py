@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from service import board_service
-from model.entity.board import Board, BoardCreate
+from model.entity.board import BoardCreate
 from model.settings import SessionDep  # ✅ 세션 의존성 import
 
 router  = APIRouter()
@@ -18,8 +18,8 @@ def findById(id: int, session: SessionDep):
     return post
 
 @router.get("/board")
-def findAll(session: SessionDep):
-    posts = board_service.findAll(session)
+def findAll(session: SessionDep, offset: int = 0, limit: int = 10):
+    posts = board_service.findAll(session, offset, limit)
     return posts
 
 @router.delete("/board/{id}")
