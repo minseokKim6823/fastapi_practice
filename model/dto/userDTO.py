@@ -5,5 +5,5 @@ class createAccount(SQLModel):
     password: str
 
 class modifyUserInfo(SQLModel):
-    name: str
+    username: str
     image: str

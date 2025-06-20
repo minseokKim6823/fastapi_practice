@@ -9,7 +9,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def createAccount(user: createAccount , session:Session):
     existing_user = session.query(User).filter(User.user_id == user.user_id).first()
     if existing_user:
-        raise HTTPException(status_code=400, detail="이미 등록된 이메일입니다.")
+        raise HTTPException(status_code=400, detail="이미 등록된 아이디입니다.")
 
     hashed_password = pwd_context.hash(user.password)
     db_user = User(
@@ -24,7 +24,7 @@ def createAccount(user: createAccount , session:Session):
 
 def modify(id: int, updated_data: modifyUserInfo, session: Session):
     user =session.query(User).filter(User.id == id).first()
-    user.name = updated_data.name
+    user.username = updated_data.username
     user.image = updated_data.image
     session.commit()
     session.refresh(user)

@@ -1,18 +1,17 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from service import user_service
 from model.dto.userDTO import createAccount
 from model.dto.userDTO import modifyUserInfo
 from model.settings import SessionDep
 
-router = APIRouter()
+router = APIRouter(prefix="/account", tags=["account"])
 
-@router.post("/create_account")
+@router.post("")
 def signUp(user: createAccount , session:SessionDep):
-    user_service.createAccount(user,session)
-    return "회원가입 완료"
+    return user_service.createAccount(user,session)
 
-@router.put("/user/{id}")
+
+@router.put("/{id}")
 def updateUserInfo(id: int, updated_data: modifyUserInfo, session: SessionDep):
-    user = user_service.modify(id, updated_data, session)
-    return user
+    return  user_service.modify(id, updated_data, session)

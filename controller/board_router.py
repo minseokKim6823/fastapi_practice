@@ -1,33 +1,33 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
 
 from service import board_service
 from model.dto.boardDTO import boardCreate
-from model.settings import SessionDep  # ✅ 세션 의존성 import
+from model.settings import get_session
+from service.login_service import get_current_user  # ❗ 인증 함수는 이걸 써야 함
 
-router  = APIRouter()
+router = APIRouter(prefix="/board", tags=["board"])
+
+@router.post("")
+def create(board: boardCreate,  session: Session = Depends(get_session) , current_user: dict = Depends(get_current_user)):
+    return board_service.createBoard(board, session)
 
 
-@router.post("/board")
-def create(board: boardCreate, session: SessionDep):
-    board_service.createBoard(board,session)
-    return "저장이 완료되었습니다."
 
-@router.get("/board/{id}")
-def readById(id: int, session: SessionDep):
-    post = board_service.findById(id, session)
-    return post
+@router.get("{id}")
+def readById(id: int, session: Session = Depends(get_session), current_user: dict = Depends(get_current_user)):
+    return board_service.findById(id, session)
 
-@router.get("/board")
-def readAll(session: SessionDep, offset: int = 0, limit: int = 10):
-    posts = board_service.findAll(session, offset, limit)
-    return posts
 
-@router.delete("/board/{id}")
-def delete(id: int, session: SessionDep):
-    response = board_service.deleteById(id, session)
-    return response
+@router.get("")
+def readAll( session: Session = Depends(get_session), offset: int = 0, limit: int = 10, current_user: dict = Depends(get_current_user)):
+    return board_service.findAll(session, offset, limit)
 
-@router.put("/board/{id}")
-def update(id: int, updated_data: boardCreate, session: SessionDep):
-    post = board_service.updatePost(id, updated_data, session)
-    return post
+@router.delete("{id}")
+def delete(id: int,  session: Session = Depends(get_session),  current_user: dict = Depends(get_current_user)):
+    return board_service.deleteById(id, session)
+
+@router.put("{id}")
+def update(id: int, updated_data: boardCreate,  session: Session = Depends(get_session),  current_user: dict = Depends(get_current_user)):
+    return board_service.updatePost(id, updated_data, session)
