@@ -1,7 +1,4 @@
-from idlelib.rpc import response_queue
-
 from fastapi import APIRouter
-from sqlalchemy.orm import Session
 
 from service import board_service
 from model.entity.board import Board, BoardCreate
@@ -12,11 +9,8 @@ router  = APIRouter()
 
 @router.post("/board")
 def create_board(board: BoardCreate, session: SessionDep):
-    db_board = Board(**board.dict())
-    session.add(db_board)
-    session.commit()
-    session.refresh(db_board)
-    return db_board
+    board_service.createBoard(board,session)
+    return "저장이 완료되었습니다."
 
 @router.get("/board/{id}")
 def findById(id: int, session: SessionDep):
@@ -33,3 +27,7 @@ def deleteById(id: int, session: SessionDep):
     response = board_service.deleteById(id, session)
     return response
 
+@router.put("/board/{id}")
+def updateById(id: int, updated_data: BoardCreate, session: SessionDep):
+    post = board_service.updatePost(id, updated_data, session)
+    return post
