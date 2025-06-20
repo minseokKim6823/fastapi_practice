@@ -1,6 +1,7 @@
 from sqlmodel import SQLModel
 
-class BoardCreate(SQLModel):
+class boardCreate(SQLModel):
     name: str
     image: str
+    writer: str
 

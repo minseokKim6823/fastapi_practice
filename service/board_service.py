@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from model.entity.board import Board
-from model.dto.boardDTO import BoardCreate
+from model.dto.boardDTO import boardCreate
 
-def createBoard(board: BoardCreate, session:Session):
+def createBoard(board: boardCreate, session:Session):
     db_board = Board(**board.dict())
     session.add(db_board)
     session.commit()
@@ -35,7 +35,7 @@ def deleteById(id: int, session: Session):
     else:
         return "글을 찾을 수 없습니다"
 
-def updatePost(id: int, updated_data: BoardCreate, session: Session):
+def updatePost(id: int, updated_data: boardCreate, session: Session):
     post = session.query(Board).filter(Board.id == id).first()
     if not post:
         return "글을 찾을 수 없습니다"

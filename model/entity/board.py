@@ -4,4 +4,5 @@ class Board(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(default=None, nullable=False, index=True)
     image: str = Field(default=None, nullable=False)
+    writer: str = Field(default=None, nullable=False)
 

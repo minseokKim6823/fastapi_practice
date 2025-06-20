@@ -1,14 +1,14 @@
 from fastapi import APIRouter
 
 from service import board_service
-from model.dto.boardDTO import BoardCreate
+from model.dto.boardDTO import boardCreate
 from model.settings import SessionDep  # ✅ 세션 의존성 import
 
 router  = APIRouter()
 
 
 @router.post("/board")
-def create(board: BoardCreate, session: SessionDep):
+def create(board: boardCreate, session: SessionDep):
     board_service.createBoard(board,session)
     return "저장이 완료되었습니다."
 
@@ -28,6 +28,6 @@ def delete(id: int, session: SessionDep):
     return response
 
 @router.put("/board/{id}")
-def update(id: int, updated_data: BoardCreate, session: SessionDep):
+def update(id: int, updated_data: boardCreate, session: SessionDep):
     post = board_service.updatePost(id, updated_data, session)
     return post
