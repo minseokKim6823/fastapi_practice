@@ -23,7 +23,7 @@ def createAccount(user: createAccount , session:Session):
     return "회원 가입 성공"
 
 def modify(id: int, updated_data: modifyUserInfo, session: Session):
-    user =session.query(User).filter(User.user_id == id).first()
+    user =session.query(User).filter(User.id == id).first()
     user.name = updated_data.name
     user.image = updated_data.image
     session.commit()
