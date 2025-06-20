@@ -5,11 +5,3 @@ class Board(SQLModel, table=True):
     name: str = Field(default=None, nullable=False, index=True)
     image: str = Field(default=None, nullable=False)
 
-class BoardCreate(SQLModel):
-    name: str
-    image: str
-
-class BoardRead(SQLModel):
-    id: int
-    name :str
-    image: str

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from model.settings import create_db_and_tables
-from controller.board_router import router as board_router
+from controller.board_controller import router as board_router
 
 
 app = FastAPI()

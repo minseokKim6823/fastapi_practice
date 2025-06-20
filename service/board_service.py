@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from model.entity.board import Board,BoardCreate
+from model.entity.board import Board
+from model.dto.boardDTO import BoardCreate
 
 def createBoard(board: BoardCreate, session:Session):
     db_board = Board(**board.dict())
@@ -36,6 +37,8 @@ def deleteById(id: int, session: Session):
 
 def updatePost(id: int, updated_data: BoardCreate, session: Session):
     post = session.query(Board).filter(Board.id == id).first()
+    if not post:
+        return "글을 찾을 수 없습니다"
     post.name = updated_data.name
     post.image = updated_data.image
     session.commit()
