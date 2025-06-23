@@ -1,7 +1,17 @@
+from typing import List
+
 from sqlmodel import SQLModel
+from pydantic import BaseModel
 
-class boardCreate(SQLModel):
+class BoardCreate(BaseModel):
     name: str
-    image: str
-    writer: str
 
+class BoardListResponse(BaseModel):
+    total: int
+    page: int
+    posts: List[BoardCreate]
+
+
+class BoardPartialRead(BaseModel):
+    name: str
+    field: str
