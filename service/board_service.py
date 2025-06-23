@@ -1,25 +1,38 @@
+import base64
+from fastapi import UploadFile
+from fastapi.responses import Response
+
 from sqlalchemy.orm import Session
 from model.entity.board import Board
 from model.dto.boardDTO import boardCreate
 
-def createBoard(board: boardCreate, session:Session):
-    db_board = Board(**board.dict())
+
+async def createBoard(name: str, writer: str, image: UploadFile, session: Session):
+    content = await image.read()
+    encoded = base64.b64encode(content).decode()
+    content_type = image.content_type
+
+    db_board = Board(
+        name=name,
+        writer=writer,
+        image=encoded,
+        content_type=content_type,
+    )
     session.add(db_board)
     session.commit()
     session.refresh(db_board)
-    return "저장 완료"
+    return db_board
 
 def findById(id: int, session: Session):
-    post = session.query(Board).filter(Board.id == id).first()
-    return post
+    return session.query(Board).filter(Board.id == id).first()
 
-def findAll(session: Session, page: int = 1, limit: int = 10):
+def findAll(board: boardCreate, session: Session, page: int = 1, limit: int = 10):
     if page <= 0:
         return {"error": "페이지는 1부터 시작합니다."}
     else:
         offset = (page - 1) * 10
-        total = session.query(Board).count()
-        allPosts = session.query(Board).offset(offset).limit(limit).all()
+        total = session.query(board).count()
+        allPosts = session.query(board).offset(offset).limit(limit).all()
         return {
             "total": total,
             "page": page,

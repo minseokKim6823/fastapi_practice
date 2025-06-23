@@ -25,6 +25,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     except JWTError:
         raise credentials_exception
 
+    print(token_data)
     return {"user_id": token_data.user_id}
 
 def get_new_token(refresh_token):
