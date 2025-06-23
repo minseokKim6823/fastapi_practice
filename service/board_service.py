@@ -12,6 +12,7 @@ async def createBoard(
         name: str,
         image: UploadFile,
         field: str,
+        group_id: int,
         session: Session
     ):
 
@@ -32,6 +33,7 @@ async def createBoard(
         name=name,
         image=encoded,
         content_type=content_type,
+        group_id=group_id,
         field=json.dumps(parsed_field),
     )
     session.add(db_board)
@@ -43,6 +45,7 @@ async def updatePost(
         name: str,
         image: UploadFile,
         field: str,
+        group_id: int,
         session: Session
     ):
 
@@ -65,9 +68,13 @@ async def updatePost(
     content_type = image.content_type
 
     post.name = name
-    post.image = encoded
+    post.group_id = group_id
     post.content_type = content_type
     post.field = json.dumps(parsed_field)
+    if encoded==None:
+        post.image = post.image
+    else:
+        post.image = encoded
 
     session.commit()
     session.refresh(post)

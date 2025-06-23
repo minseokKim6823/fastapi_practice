@@ -1,4 +1,19 @@
-
+/*
+[
+	{
+		"bbox": [12,12,12,12],
+		"name": "제목",
+		"type": "nlp",
+		"validValues":["test","produce","green"]
+	},
+	{
+		"bbox": [102,120,103,104],
+		"name": "체크박스",
+		"type": "checkBox",
+		"checkBox":"T"
+	}
+]
+*/
 
 [
   {

@@ -17,9 +17,10 @@ async def create(
         name: str = Form(...),
         image: UploadFile = File(...),
         field: str = Form(...),
+        group_id: int = Form(...),
         session: Session = Depends(get_session)
     ):
-    return await board_service.createBoard(name, image, field, session)
+    return await board_service.createBoard(name, image, field, group_id, session)
 
 @router.put("{id}")
 async def update(
@@ -27,9 +28,10 @@ async def update(
         name: str = Form(...),
         image: UploadFile = File(...),
         field: str = Form(...),
+        group_id: int = Form(...),
         session: Session = Depends(get_session)
     ):
-    return await board_service.updatePost(id, name, image, field, session)
+    return await board_service.updatePost(id, name, image, field,group_id, session)
 
 
 @router.get("/image/{id}")
