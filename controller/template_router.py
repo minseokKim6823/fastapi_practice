@@ -12,7 +12,7 @@ from model.settings import get_session
 # from fastapi.security import OAuth2PasswordBearer
 # from service.login_service import get_current_user
 
-router = APIRouter(prefix="/board", tags=["board"])
+router = APIRouter(prefix="/template", tags=["template"])
 
 @router.post("")
 async def create(
@@ -46,7 +46,7 @@ def readImageById(id: int, session: Session = Depends(get_session)):
 
     return Response(content=image_data, media_type=post.content_type)
 
-@router.get("/fields/{id}", response_model=TemplatePartialRead)
+@router.get("/{id}", response_model=TemplatePartialRead)
 def readFieldsById(id: int, session: Session = Depends(get_session)):
     template = template_service.findFieldsById(id, session)
     if not template:
@@ -58,7 +58,7 @@ def readFieldsById(id: int, session: Session = Depends(get_session)):
 def readAll(session: Session = Depends(get_session), offset: int = 1, limit: int = 10):
     return template_service.findAll(session, offset, limit)
 
-@router.delete("{id}")
+@router.delete("/{id}")
 def delete(id: int,  session: Session = Depends(get_session)):
     return template_service.deleteById(id, session)
 
