@@ -16,24 +16,24 @@ router = APIRouter(prefix="/board", tags=["board"])
 
 @router.post("")
 async def create(
-        name: str = Form(...),
+        template_name: str = Form(...),
         image: UploadFile = File(...),
         field: str = Form(...),
-        group_id: int = Form(...),
+        template_group_id: int = Form(...),
         session: Session = Depends(get_session)
     ):
-    return await template_service.createTemplate(name, image, field, group_id, session)
+    return await template_service.createTemplate(template_name, image, field, template_group_id, session)
 
 @router.put("/{id}")
 async def update(
         id: int,
-        name: str = Form(...),
+        template_name: str = Form(...),
         image: Optional[UploadFile] = File(None),
         field: str = Form(...),
-        group_id: int = Form(...),
+        template_group_id: int = Form(...),
         session: Session = Depends(get_session)
     ):
-    return await template_service.updatePost(id, name, image, field, group_id, session)
+    return await template_service.updatePost(id, template_name, image, field, template_group_id, session)
 
 
 @router.get("/image/{id}")
@@ -49,12 +49,6 @@ def readImageById(id: int, session: Session = Depends(get_session)):
 @router.get("/fields/{id}", response_model=TemplatePartialRead)
 def readFieldsById(id: int, session: Session = Depends(get_session)):
     template = template_service.findFieldsById(id, session)
-    if template:
-        # field가 JSON 문자열이면 dict로 변환
-        try:
-            template.field = json.loads(template.field)
-        except json.JSONDecodeError:
-            raise HTTPException(status_code=500, detail="field JSON 파싱 실패")
     if not template:
         return {"error": "게시물을 찾을 수 없습니다"}
     return template

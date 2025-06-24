@@ -3,7 +3,7 @@ from typing import List,Dict
 from pydantic import BaseModel
 
 class TemplateCreate(BaseModel):
-    name: str
+    template_name: str
 
 class TemplateListResponse(BaseModel):
     total: int
@@ -12,5 +12,5 @@ class TemplateListResponse(BaseModel):
 
 
 class TemplatePartialRead(BaseModel):
-    name: str
+    template_name: str
     field: List[Dict]
