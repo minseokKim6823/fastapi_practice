@@ -1,15 +1,15 @@
 import base64
-import json
 from typing import Optional
 
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
-from fastapi.security import OAuth2PasswordBearer
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from service import template_service
 from model.dto.templateDTO import TemplatePartialRead, TemplateListResponse
 from model.settings import get_session
+
+# from fastapi.security import OAuth2PasswordBearer
 # from service.login_service import get_current_user
 
 router = APIRouter(prefix="/board", tags=["board"])

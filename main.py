@@ -1,16 +1,21 @@
 from fastapi import FastAPI
 from model.settings import create_db_and_tables
-from controller.template_router import router as board_router
+from service.update_time_service import register_timestamp_events
 from controller.login_router import router as login_router
 from controller.account_router import router as account_router
-
+from controller.template_router import router as template_router
+from controller.template_group_router import router as template_group_router
+from controller.template_container_router import router as template_container_router
 
 app = FastAPI()
 
 @app.on_event("startup")
 def on_startup():
+    register_timestamp_events()
     create_db_and_tables()
 
-app.include_router(board_router)
+app.include_router(template_router)
+app.include_router(template_group_router)
+app.include_router(template_container_router)
 app.include_router(login_router)
 app.include_router(account_router)

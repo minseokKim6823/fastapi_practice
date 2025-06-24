@@ -1,0 +1,13 @@
+from typing import List, Optional
+from sqlmodel import Field, SQLModel, Relationship
+from model.entity.template_container import TemplateContainer
+from service.timeset_service import TimestampMixin
+
+
+class TemplateGroup(SQLModel, TimestampMixin, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    template_group_name: str = Field(nullable=False)
+    template_container_id: Optional[int] = Field(default=None, foreign_key="templatecontainer.id")
+
+    container: Optional[TemplateContainer] = Relationship(back_populates="groups")
+    templates: List["Template"] = Relationship(back_populates="group")

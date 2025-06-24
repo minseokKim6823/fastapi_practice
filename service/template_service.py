@@ -7,7 +7,6 @@ from fastapi.responses import Response
 
 from sqlalchemy.orm import Session
 from model.entity.template import Template
-from model.dto.templateDTO import TemplateCreate
 
 
 async def createTemplate(
@@ -41,6 +40,7 @@ async def createTemplate(
     session.add(db_board)
     session.commit()
     return "저장완료"
+
 
 async def updatePost(
         id: int,
