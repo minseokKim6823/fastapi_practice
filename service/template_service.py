@@ -7,6 +7,7 @@ from fastapi.responses import Response
 
 from sqlalchemy.orm import Session
 from model.entity.template import Template
+from model.entity.template_container import TemplateContainer
 from model.entity.template_group import TemplateGroup
 
 
@@ -35,7 +36,6 @@ async def createTemplate(
         template_group_id = template_group.id
     else:
         return {"error": "템플릿 그룹명을 확인해 주세요. 존재하지않는 템플릿 명 입니다"}
-    print(template_group_id)
     db_board = Template(
         template_name=template_name,
         image=encoded,
@@ -102,22 +102,51 @@ def findImageById(id: int, session: Session):
     return session.query(Template).filter(Template.id == id).first()
 
 def findFieldsById(id: int, session: Session):
-    return session.query(Template).filter(Template.id == id).first()
+    post = session.query(Template).filter(Template.id == id).first()
+    template_group = session.query(TemplateGroup).filter(TemplateGroup.id == post.template_group_id).first()
+    print("template_group_id :",template_group.id)
+    template_container = session.query(TemplateContainer).filter(TemplateContainer.id == template_group.template_container_id).first()
+    return{
+        "id": post.id,
+        "template_name": post.template_name,
+        "field": post.field,
+        "template_group_id": post.template_group_id,
+        "template_group_name": template_group.template_group_name if template_group.template_group_name else None,
+        "template_container_name": template_container.template_container_name if template_container.template_container_name else None,
+        "template_container_id": template_container.id if template_container.id else None
+    }
+
+
 
 def findAll(session: Session, page: int = 1, limit: int = 10):
     if page <= 0:
         return {"error": "페이지는 1부터 시작합니다."}
     else:
-        offset = (page - 1) * 10
+        offset = (page - 1) * limit
         total = session.query(Template).count()
         allPosts = session.query(Template).offset(offset).limit(limit).all()
+
+        result = []
+        for post in allPosts:
+            template_group = session.query(TemplateGroup).filter(TemplateGroup.id == post.template_group_id).first()
+            if template_group:
+                template_container = session.query(TemplateContainer).filter(
+                    TemplateContainer.id == template_group.template_container_id).first()
+            else:
+                template_container = None
+
+            result.append({
+                "template_name": post.template_name,
+                "template_group_id": post.template_group_id,
+                "template_group_name": template_group.template_group_name if template_group else None,
+                "template_container_name": template_container.template_container_name if template_container else None,
+                "template_container_id": template_container.id if template_container else None,
+            })
+
         return {
             "total": total,
             "page": page,
-            "posts": [
-                {"template_name": post.template_name}
-                for post in allPosts
-            ]
+            "posts": result
         }
 
 def deleteById(id: int, session: Session):

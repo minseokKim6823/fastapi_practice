@@ -1,4 +1,4 @@
-from typing import List,Dict
+from typing import List, Dict, Optional
 
 from pydantic import BaseModel
 
@@ -8,12 +8,15 @@ class TemplateCreate(BaseModel):
 class TemplateCreate(BaseModel):
     template_name: str
 
-class TemplateListResponse(BaseModel):
-    total: int
-    page: int
-    posts: List[TemplateCreate]
-
 
 class TemplatePartialRead(BaseModel):
     template_name: str
-    field: List[Dict]
+    template_group_id: int
+    template_group_name: Optional[str] = None
+    template_container_name: Optional[str] = None
+    template_container_id: Optional[int] = None
+
+class TemplateListResponse(BaseModel):
+    total: int
+    page: int
+    posts: List[TemplatePartialRead]
