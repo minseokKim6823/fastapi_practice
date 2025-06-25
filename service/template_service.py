@@ -7,16 +7,17 @@ from fastapi.responses import Response
 
 from sqlalchemy.orm import Session
 from model.entity.template import Template
+from model.entity.template_group import TemplateGroup
 
 
 async def createTemplate(
         template_name: str,
         image: UploadFile,
         field: str,
-        template_group_id: int,
+        template_group_name: str,
         session: Session
     ):
-
+    template_group_id=None
     try:
         parsed_field = json.loads(field)
     except json.JSONDecodeError:
@@ -29,7 +30,12 @@ async def createTemplate(
     content = await image.read()
     encoded = base64.b64encode(content).decode()
     content_type = image.content_type
-
+    template_group = session.query(TemplateGroup).filter(TemplateGroup.template_group_name==template_group_name).first()
+    if template_group:
+        template_group_id = template_group.id
+    else:
+        return {"error": "템플릿 그룹명을 확인해 주세요. 존재하지않는 템플릿 명 입니다"}
+    print(template_group_id)
     db_board = Template(
         template_name=template_name,
         image=encoded,
@@ -47,7 +53,7 @@ async def updatePost(
         template_name: str,
         image: Optional[UploadFile],
         field: str,
-        template_group_id: int,
+        template_group_name: str,
         session: Session
     ):
     post = session.query(Template).filter(Template.id == id).first()
@@ -75,6 +81,14 @@ async def updatePost(
         if content:      #사진 없으면 그전 사진
             post.image = base64.b64encode(content).decode()
             post.content_type = image.content_type
+
+    template_group = session.query(TemplateGroup).filter(
+        TemplateGroup.template_group_name == template_group_name).first()
+    if template_group:
+        template_group_id = template_group.id
+    else:
+        return {"error": "템플릿 그룹명을 확인해 주세요"}
+    print(template_group_id)
 
     post.template_name = template_name
     post.template_group_id = template_group_id

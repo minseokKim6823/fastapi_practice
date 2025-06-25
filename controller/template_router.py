@@ -19,10 +19,10 @@ async def create(
         template_name: str = Form(...),
         image: UploadFile = File(...),
         field: str = Form(...),
-        template_group_id: int = Form(...),
+        template_group_name: str = Form(...),
         session: Session = Depends(get_session)
     ):
-    return await template_service.createTemplate(template_name, image, field, template_group_id, session)
+    return await template_service.createTemplate(template_name, image, field, template_group_name, session)
 
 @router.put("/{id}")
 async def update(
@@ -30,10 +30,10 @@ async def update(
         template_name: str = Form(...),
         image: Optional[UploadFile] = File(None),
         field: str = Form(...),
-        template_group_id: int = Form(...),
+        template_group_name: str = Form(...),
         session: Session = Depends(get_session)
     ):
-    return await template_service.updatePost(id, template_name, image, field, template_group_id, session)
+    return await template_service.updatePost(id, template_name, image, field, template_group_name, session)
 
 
 @router.get("/image/{id}")

@@ -5,6 +5,9 @@ from pydantic import BaseModel
 class TemplateCreate(BaseModel):
     template_name: str
 
+class TemplateCreate(BaseModel):
+    template_name: str
+
 class TemplateListResponse(BaseModel):
     total: int
     page: int
