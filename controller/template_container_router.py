@@ -1,3 +1,4 @@
+from model.dto.containerDTO import createContainer, modifyContainer
 from service import template_container_service
 from fastapi import APIRouter, Depends, Form
 from sqlalchemy.orm import Session
@@ -9,7 +10,7 @@ router = APIRouter(prefix="/container", tags=["container"])
 
 @router.post("")
 async def create(
-        template_container_name : str = Form(...),
+        template_container_name : createContainer,
         session: Session = Depends(get_session)
     ):
     return await template_container_service.createTemplateContainer(template_container_name, session)
@@ -17,7 +18,7 @@ async def create(
 @router.put("/{id}")
 def update(
         id: int,
-        template_container_name: str = Form(...),
+        template_container_name : modifyContainer,
         session: Session = Depends(get_session)
     ):
     return template_container_service.updateTemplateContainer(id, template_container_name, session)

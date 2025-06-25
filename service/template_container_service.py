@@ -12,7 +12,7 @@ async def createTemplateContainer(
         return {"error": f"이미 존재하는 template_container_name: {template_container_name}"}
 
     db_board = TemplateContainer(
-        template_container_name=template_container_name,
+        template_container_name=template_container_name
     )
     session.add(db_board)
     session.commit()
@@ -62,4 +62,4 @@ def deleteById(id: int, session: Session):
         session.commit()
         return f"{id}번 컨테이너가 삭제되었습니다."
     else:
-        return "컨테이너를 찾을 수 없습니다."
+        return "해당 컨테이너를 찾을 수 없습니다."

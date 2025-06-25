@@ -1,21 +1,66 @@
 from sqlalchemy.orm import Session
 
+from model.dto.groupDTO import createGroup, modifyGroup
 from model.entity.template_group import TemplateGroup
 
 
 async def createTemplateGroup(
-        template_group_name: str,
+        group: createGroup,
         session: Session
     ):
-
-    existing = session.query(TemplateGroup).filter(TemplateGroup.template_group_name == template_group_name).first()
+    existing = session.query(TemplateGroup).filter(TemplateGroup.template_group_name == group.template_group_name).first()
     if existing:
-        return {"error": f"이미 존재하는 template_group_name: {template_group_name}"}
+        return {"error": f"이미 존재하는 template_group_name: {group.template_group_name}"}
 
-    db_board = TemplateGroup(
-        template_group_name=template_group_name,
-        # field=parsed_field
+    db_group = TemplateGroup(
+        template_group_name = group.template_group_name,
+        template_container_id =group.template_container_id
     )
-    session.add(db_board)
+    session.add(db_group)
     session.commit()
-    return "저장완료"
+    session.refresh(db_group)
+    return "저장 완료 "
+
+def updateTemplateGroup(
+        id: int,
+        updated_data: modifyGroup,
+        session: Session
+    ):
+    existing = session.query(TemplateGroup).filter(TemplateGroup.template_group_name == updated_data.template_group_name).first()
+    if existing:
+        return {"error": f"이미 존재하는 template_group_name: {updated_data.template_group_name}"}
+    group = session.query(TemplateGroup).filter(TemplateGroup.id == id).first()
+    group.template_group_name = updated_data.template_group_name
+    group.template_container_id = updated_data.template_container_id
+    session.commit()
+    session.refresh(group)
+    return "수정완료"
+
+def findAllGroups(session: Session, page: int = 1, limit: int = 10):
+    if page <= 0:
+        return {"error": "페이지는 1부터 시작합니다."}
+    else:
+        offset = (page - 1) * 10
+        total = session.query(TemplateGroup).count()
+        allPosts = session.query(TemplateGroup).offset(offset).limit(limit).all()
+        return {
+            "total": total,
+            "page": page,
+            "posts": [
+                {
+                    "template_group_id": post.id,
+                    "template_group": post.template_group_name,
+                    "template_container_id":post.template_container_id
+                }
+                for post in allPosts
+            ]
+        }
+
+def deleteById(id: int, session: Session):
+    post = session.query(TemplateGroup).filter(TemplateGroup.id == id).first()
+    if post:
+        session.delete(post)
+        session.commit()
+        return f"{id}번 그룹이 삭제되었습니다."
+    else:
+        return "해당 그룹을 찾을 수 없습니다."
