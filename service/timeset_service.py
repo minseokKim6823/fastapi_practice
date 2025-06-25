@@ -6,7 +6,7 @@ from typing import Optional
 KST = timezone(timedelta(hours=9))
 
 def now_kst():
-    return datetime.now(KST)
+    return datetime.now(KST).replace(microsecond=0)
 
 
 class TimestampMixin:
