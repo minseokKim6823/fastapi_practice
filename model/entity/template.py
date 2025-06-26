@@ -11,7 +11,7 @@ class Template(SQLModel, TimestampMixin, table=True):
     image: str = Field(default=None, nullable=False)
     content_type: str = Field(default=None, nullable=False)
     field: list[dict] = Field(sa_column=Column(JSON)) #리스트 형태로 저장됨
-    template_group_id: Optional[int] = Field(default=None, foreign_key="templategroup.id")
+    template_group_id: Optional[int] = Field(default=None, nullable= True)
 
     group: Optional[TemplateGroup] = Relationship(back_populates="templates")
 
