@@ -18,7 +18,7 @@ router = APIRouter(prefix="/template", tags=["template"])
 async def create(
         template_name: str = Form(...),
         image: UploadFile = File(...),
-        field: str = Form(...),
+        field: Optional[str] = Form(None),
         template_group_id: Optional[int] = Form(None),
         session: Session = Depends(get_session)
     ):
@@ -29,11 +29,11 @@ async def update(
         id: int,
         template_name: str = Form(...),
         image: Optional[UploadFile] = File(None),
-        field: str = Form(...),
-        template_group_name: str = Form(...),
+        field: Optional[str] = Form(None),
+        template_group_id: Optional[int] = Form(None),
         session: Session = Depends(get_session)
     ):
-    return await template_service.updatePost(id, template_name, image, field, template_group_name, session)
+    return await template_service.updateTemplate(id, template_name, image, field, template_group_id, session)
 
 
 @router.get("/image/{id}")

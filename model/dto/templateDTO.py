@@ -11,7 +11,7 @@ class TemplatePartialRead(BaseModel):
     updated_at: Optional[datetime] = None
     template_field: list =None
     template_name: str
-    template_group_id: int
+    template_group_id: Optional[int] = None
     template_group_name: Optional[str] = None
     template_container_name: Optional[str] = None
     template_container_id: Optional[int] = None

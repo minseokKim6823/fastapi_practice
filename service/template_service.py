@@ -14,18 +14,18 @@ from model.entity.template_group import TemplateGroup
 async def createTemplate(
         template_name: str,
         image: UploadFile,
-        field: str,
+        field: str | None,
         template_group_id: int | None,
         session: Session
     ):
-    try:
-        parsed_field = json.loads(field)
-    except json.JSONDecodeError:
-        return {"error": "field는 유효한 JSON 문자열이어야 합니다."}
+    if not field:
+        parsed_field = None
+    else:
+        try:
+            parsed_field = json.loads(field)
+        except json.JSONDecodeError:
+            parsed_field = None
 
-    existing = session.query(Template).filter(Template.template_name == template_name).first()
-    if existing:
-        return {"error": f"이미 존재하는 template_name: {template_name}"}
     content = await image.read()
     encoded = base64.b64encode(content).decode()
     content_type = image.content_type
@@ -42,12 +42,12 @@ async def createTemplate(
     return "저장완료"
 
 
-async def updatePost(
+async def updateTemplate(
         id: int,
         template_name: str,
         image: Optional[UploadFile],
-        field: str,
-        template_group_name: str,
+        field: Optional[str],
+        template_group_id: Optional[int],
         session: Session
     ):
     post = session.query(Template).filter(Template.id == id).first()
@@ -55,19 +55,13 @@ async def updatePost(
     if not post:
         return "글을 찾을 수 없습니다."
 
-    # 중복방지
-    existing = session.query(Template).filter(Template.template_name == template_name, Template.id != id).first()
-    if existing:
-        return {"error": f"다른 게시물에서 이미 사용 중인 template_name 입니다: {template_name}"}
-
-    # JSON 형태
-    if isinstance(field, str):
+    if not field:
+        parsed_field = None
+    else:
         try:
             parsed_field = json.loads(field)
         except json.JSONDecodeError:
-            return {"error": "field는 유효한 JSON 문자열이어야 합니다."}
-    else:
-        parsed_field = field
+            parsed_field = None
 
     # 이미지가 실제로 들어왔는지 확인
     if image and image.filename:
@@ -76,17 +70,9 @@ async def updatePost(
             post.image = base64.b64encode(content).decode()
             post.content_type = image.content_type
 
-    template_group = session.query(TemplateGroup).filter(
-        TemplateGroup.template_group_name == template_group_name).first()
-    if template_group:
-        template_group_id = template_group.id
-    else:
-        return {"error": "템플릿 그룹명을 확인해 주세요"}
-
+    post.field =parsed_field
     post.template_name = template_name
     post.template_group_id = template_group_id
-    post.field = parsed_field
-
     session.commit()
     session.refresh(post)
     return "수정완료"
@@ -96,16 +82,28 @@ def findImageById(id: int, session: Session):
 
 def findFieldsById(id: int, session: Session):
     post = session.query(Template).filter(Template.id == id).first()
-    template_group = session.query(TemplateGroup).filter(TemplateGroup.id == post.template_group_id).first()
-    template_container = session.query(TemplateContainer).filter(TemplateContainer.id == template_group.template_container_id).first()
+    if not post:
+        return None
+
+    template_group = session.query(TemplateGroup).filter(
+        TemplateGroup.id == post.template_group_id
+    ).first()
+
+    if template_group:
+        template_container = session.query(TemplateContainer).filter(
+            TemplateContainer.id == template_group.template_container_id
+        ).first()
+    else:
+        template_container = None
+
     return{
         "id": post.id,
         "template_name": post.template_name,
-        "template_field": post.field,
-        "template_group_id": post.template_group_id,
-        "template_group_name": template_group.template_group_name if template_group.template_group_name else None,
-        "template_container_name": template_container.template_container_name if template_container.template_container_name else None,
-        "template_container_id": template_container.id if template_container.id else None
+        "template_field": post.field if post.field is not None else [],
+        "template_group_id": post.template_group_id if template_group else None,
+        "template_group_name": template_group.template_group_name if template_group else None,
+        "template_container_name": template_container.template_container_name if template_container else None,
+        "template_container_id": template_container.id if template_container else None
     }
 
 
@@ -123,11 +121,13 @@ def findAll(session: Session, page: int = 1, limit: int = 10):
             template_group = session.query(TemplateGroup).filter(TemplateGroup.id == post.template_group_id).first()
             if template_group:
                 template_container = session.query(TemplateContainer).filter(
-                    TemplateContainer.id == template_group.template_container_id).first()
+                    TemplateContainer.id == template_group.template_container_id
+                ).first()
             else:
                 template_container = None
 
             result.append({
+                "id":post.id,
                 "created_at": post.created_at,
                 "updated_at": post.updated_at,
                 "template_name": post.template_name,
