@@ -15,10 +15,9 @@ async def createTemplate(
         template_name: str,
         image: UploadFile,
         field: str,
-        template_group_name: str,
+        template_group_id: int | None,
         session: Session
     ):
-    template_group_id=None
     try:
         parsed_field = json.loads(field)
     except json.JSONDecodeError:
@@ -27,15 +26,10 @@ async def createTemplate(
     existing = session.query(Template).filter(Template.template_name == template_name).first()
     if existing:
         return {"error": f"이미 존재하는 template_name: {template_name}"}
-
     content = await image.read()
     encoded = base64.b64encode(content).decode()
     content_type = image.content_type
-    template_group = session.query(TemplateGroup).filter(TemplateGroup.template_group_name==template_group_name).first()
-    if template_group:
-        template_group_id = template_group.id
-    else:
-        return {"error": "템플릿 그룹명을 확인해 주세요. 존재하지않는 템플릿 명 입니다"}
+
     db_board = Template(
         template_name=template_name,
         image=encoded,

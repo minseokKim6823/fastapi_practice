@@ -7,7 +7,7 @@ from service.timeset_service import TimestampMixin
 class TemplateGroup(SQLModel, TimestampMixin, table=True):
     id: int | None = Field(default=None, primary_key=True)
     template_group_name: str = Field(nullable=False)
-    template_container_id: Optional[int] = Field(default=None, foreign_key="templatecontainer.id")
+    template_container_id: Optional[int]|None = Field(default=None, foreign_key="templatecontainer.id")
 
     container: Optional[TemplateContainer] = Relationship(back_populates="groups")
     templates: List["Template"] = Relationship(back_populates="group")

@@ -6,10 +6,6 @@ from pydantic import BaseModel
 class TemplateCreate(BaseModel):
     template_name: str
 
-class TemplateCreate(BaseModel):
-    template_name: str
-
-
 class TemplatePartialRead(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None

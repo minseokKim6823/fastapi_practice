@@ -19,10 +19,10 @@ async def create(
         template_name: str = Form(...),
         image: UploadFile = File(...),
         field: str = Form(...),
-        template_group_name: str = Form(...),
+        template_group_id: Optional[int] = Form(None),
         session: Session = Depends(get_session)
     ):
-    return await template_service.createTemplate(template_name, image, field, template_group_name, session)
+    return await template_service.createTemplate(template_name, image, field, template_group_id, session)
 
 @router.put("/{id}")
 async def update(
