@@ -93,21 +93,14 @@ def findFieldsById(id: int, template_group_id: int, session: Session):
         TemplateGroup.id == post.template_group_id
     ).first()
 
-    # if template_group:
-    #     template_container = session.query(TemplateContainer).filter(
-    #         TemplateContainer.id == template_group.template_container_id
-    #     ).first()
-    # else:
-    #     template_container = None
-
     return{
-        "id": post.id,
+        "id":post.id,
+        "created_at": post.created_at,
+        "updated_at": post.updated_at,
         "template_name": post.template_name,
-        "field": post.field if post.field is not None else [],
+        "field": post.field,
         "template_group_id": post.template_group_id if template_group else None,
         "template_group_name": template_group.template_group_name if template_group else None,
-        # "template_container_name": template_container.template_container_name if template_container else None,
-        # "template_container_id": template_container.id if template_container else None
     }
 
 
@@ -127,8 +120,8 @@ def findAll(session: Session, page: int = 1, limit: int = 10):
                 "created_at": post.created_at,
                 "updated_at": post.updated_at,
                 "template_name": post.template_name,
+                "field": post.field,
                 "template_group_id": post.template_group_id,
-                "field":post.field,
                 "template_group_name": template_group.template_group_name if template_group else None
             })
         return {
@@ -144,15 +137,9 @@ def findByGroupId(template_group_id: int, session: Session, page: int = 1, limit
         offset = (page - 1) * limit
         total = session.query(Template).count()
         allPosts = session.query(Template).offset(offset).limit(limit).all()
-
         result = []
         for post in allPosts:
-            print(post.template_group_id)
-            print(TemplateGroup.id)
-            template_group = session.query(TemplateGroup).filter(
-                post.template_group_id == TemplateGroup.id
-            ).first()
-            print(template_group)
+            template_group = session.query(TemplateGroup).filter(TemplateGroup.id == template_group_id).first()
             result.append({
                 "id": post.id,
                 "created_at": post.created_at,
