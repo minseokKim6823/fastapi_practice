@@ -1,8 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Depends
 from fastapi.responses import Response
+from fastapi import Form
 from typing import Optional, List
-import base64
-
 from requests import Session
 
 from model.settings import get_session
@@ -11,21 +10,23 @@ from service.template_run_service import upload_image_and_classify_from_db
 
 router=APIRouter(prefix="/run",tags=["run_template"])
 
-@router.post("/upload")
-async def upload(image: Optional[UploadFile] = File(None)):
-    if image is None:
-        return Response(content=b"No image uploaded", status_code=400)
-
-    image_data = await template_run_service.uploadImg(image)
-    image_data = base64.b64decode(image_data)
-
-    return Response(content=image_data, media_type="image/jpeg")
+# @router.post("/upload")
+# async def upload(image: Optional[UploadFile] = File(None)):
+#     if image is None:
+#         return Response(content=b"No image uploaded", status_code=400)
+#
+#     image_data = await template_run_service.uploadImg(image)
+#     image_data = base64.b64decode(image_data)
+#
+#     return Response(content=image_data, media_type="image/jpeg")
 
 
 @router.post("/images/match")
 async def run_match_images(
+        template_groups_id : Optional[str] = Form(None),
+        threshold: Optional[float] = Form(None),
         images_list: List[UploadFile] = File(...),
         session: Session = Depends(get_session)
         ):
-    result = await upload_image_and_classify_from_db(images_list, session)
+    result = await upload_image_and_classify_from_db(template_groups_id, threshold, images_list, session)
     return result

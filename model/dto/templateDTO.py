@@ -9,12 +9,10 @@ class TemplateCreate(BaseModel):
 class TemplatePartialRead(BaseModel):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-    template_field: list =None
+    field: Optional[list] = None
     template_name: str
     template_group_id: Optional[int] = None
     template_group_name: Optional[str] = None
-    template_container_name: Optional[str] = None
-    template_container_id: Optional[int] = None
 
     class Config:
         json_encoders = {

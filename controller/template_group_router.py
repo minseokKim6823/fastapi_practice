@@ -27,6 +27,7 @@ def update(
 def read(session: Session = Depends(get_session), offset: int = 1, limit: int = 10):
     return template_group_service.findAllGroups(session, offset, limit)
 
+
 @router.delete("/{id}")
 def delete(
         id: int,session: Session = Depends(get_session)

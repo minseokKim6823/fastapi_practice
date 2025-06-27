@@ -10,18 +10,18 @@ router = APIRouter(prefix="/container", tags=["container"])
 
 @router.post("")
 async def create(
-        template_container_name : createContainer,
+        dto : createContainer,
         session: Session = Depends(get_session)
     ):
-    return await template_container_service.createTemplateContainer(template_container_name, session)
+    return await template_container_service.createTemplateContainer(dto.template_container_name, session)
 
 @router.put("/{id}")
 def update(
         id: int,
-        template_container_name : modifyContainer,
+        dto : modifyContainer,
         session: Session = Depends(get_session)
     ):
-    return template_container_service.updateTemplateContainer(id, template_container_name, session)
+    return template_container_service.updateTemplateContainer(id, dto.template_container_name, session)
 
 @router.get("")
 def read(session: Session = Depends(get_session), offset: int = 1, limit: int = 10):

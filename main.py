@@ -19,7 +19,7 @@ def on_startup():
 
 app.include_router(template_router)
 app.include_router(template_group_router)
-app.include_router(template_container_router)
+# app.include_router(template_container_router)
 # app.include_router(login_router)
 # app.include_router(account_router)
 app.include_router(template_run_router)
