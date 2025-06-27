@@ -1,4 +1,12 @@
-pydantic
-sqlmodel
+pydantic~=2.11.7
+sqlmodel~=0.0.24
 Field
 Relationship
+SQLAlchemy~=2.0.41
+fastapi~=0.115.13
+passlib~=1.7.4
+jose~=1.0.0
+python-jose~=3.5.0
+dotenv~=0.9.9
+python-dotenv~=1.1.0
+requests~=2.32.4

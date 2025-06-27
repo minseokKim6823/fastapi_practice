@@ -1,7 +1,6 @@
-from fastapi import APIRouter, UploadFile, File, Depends
+from fastapi import APIRouter, UploadFile, File, Depends, Form
 from fastapi.responses import Response
-from fastapi import Form
-from typing import Optional, List
+from typing import Annotated
 from requests import Session
 
 from model.settings import get_session
@@ -23,10 +22,9 @@ router=APIRouter(prefix="/run",tags=["run_template"])
 
 @router.post("/images/match")
 async def run_match_images(
-        template_groups_id : Optional[str] = Form(None),
-        threshold: Optional[float] = Form(None),
-        images_list: List[UploadFile] = File(...),
+        threshold: Annotated[str, Form(...)],
+        images_list: Annotated[list[UploadFile], File(...)],
         session: Session = Depends(get_session)
         ):
-    result = await upload_image_and_classify_from_db(template_groups_id, threshold, images_list, session)
+    result = await upload_image_and_classify_from_db(threshold, images_list, session)
     return result
