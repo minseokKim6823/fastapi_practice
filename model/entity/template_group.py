@@ -9,6 +9,7 @@ class TemplateGroup(SQLModel, TimestampMixin, table=True):
     template_group_name: str = Field(nullable=False)
     template_group_threshold:Optional[float]|None = Field(default=None)
     # template_container_id: Optional[int]|None = Field(default=None, foreign_key="templatecontainer.id")
+    template_container_id: Optional[int]|None = Field(default=None)
 
     # container: Optional[TemplateContainer] = Relationship(back_populates="groups")
     templates: List["Template"] = Relationship(back_populates="group")

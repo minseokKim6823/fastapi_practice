@@ -46,7 +46,7 @@ async def updateTemplate(
         id: int,
         template_name: str,
         image: Optional[UploadFile],
-        field: Optional[str],
+        field: str | None,
         template_group_id: int,
         session: Session
     ):
@@ -56,6 +56,8 @@ async def updateTemplate(
     ).first()
     if not (post.template_group_id == template_group_id and post.id ==id):
         return "해당 정보에 맞는 템플릿이 없습니다."
+    if not field:
+        parsed_field = None
     else:
         try:
             parsed_field = json.loads(field)
@@ -76,10 +78,13 @@ async def updateTemplate(
     return "수정완료"
 
 def findImageById(id: int, template_group_id: int, session: Session):
-    return session.query(Template).filter(
+    post = session.query(Template).filter(
         Template.id == id and
         Template.template_group_id == template_group_id
         ).first()
+    if not (post.template_group_id == template_group_id and post.id ==id):
+        return "해당 정보에 맞는 템플릿이 없습니다."
+    return post
 
 def findFieldsById(id: int, template_group_id: int, session: Session):
     post = session.query(Template).filter(
@@ -88,10 +93,14 @@ def findFieldsById(id: int, template_group_id: int, session: Session):
         ).first()
     if not post:
         return None
+    if not (post.template_group_id == template_group_id and post.id == id):
+        return "해당 정보에 맞는 템플릿이 없습니다."
 
     template_group = session.query(TemplateGroup).filter(
         TemplateGroup.id == post.template_group_id
     ).first()
+    if not (post.template_group_id == template_group_id and post.id == id):
+        return "해당 정보에 맞는 템플릿이 없습니다."
 
     return{
         "id":post.id,
@@ -139,16 +148,17 @@ def findByGroupId(template_group_id: int, session: Session, page: int = 1, limit
         allPosts = session.query(Template).offset(offset).limit(limit).all()
         result = []
         for post in allPosts:
-            template_group = session.query(TemplateGroup).filter(TemplateGroup.id == template_group_id).first()
-            result.append({
-                "id": post.id,
-                "created_at": post.created_at,
-                "updated_at": post.updated_at,
-                "field": post.field,
-                "template_name": post.template_name,
-                "template_group_id": post.template_group_id,
-                "template_group_name": template_group.template_group_name if template_group else None
-            })
+            if post.template_group_id == template_group_id:
+                template_group = session.query(TemplateGroup).filter(TemplateGroup.id == template_group_id).first()
+                result.append({
+                    "id": post.id,
+                    "created_at": post.created_at,
+                    "updated_at": post.updated_at,
+                    "field": post.field,
+                    "template_name": post.template_name,
+                    "template_group_id": post.template_group_id,
+                    "template_group_name": template_group.template_group_name if template_group else None
+                })
         return {
             "total": total,
             "page": page,
@@ -160,6 +170,8 @@ def deleteById(id: int, template_group_id: int, session: Session):
         Template.id == id and
         Template.template_group_id == template_group_id
         ).first()
+    if not (post.template_group_id == template_group_id and post.id == id):
+        return "해당 정보에 맞는 템플릿이 없습니다."
     if post:
         session.delete(post)
         session.commit()
