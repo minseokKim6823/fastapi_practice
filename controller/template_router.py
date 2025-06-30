@@ -12,9 +12,9 @@ from model.settings import get_session
 # from fastapi.security import OAuth2PasswordBearer
 # from service.login_service import get_current_user
 
-router = APIRouter(prefix="/template", tags=["template"])
+router = APIRouter(prefix="", tags=["template"])
 
-@router.post("/{template_group_id}")
+@router.post("/{template_group_id}/template")
 async def create(
         template_group_id: int,
         template_name: str = Form(...),
@@ -24,7 +24,7 @@ async def create(
     ):
     return await template_service.createTemplate(template_name, image, field, template_group_id, session)
 
-@router.put("/{template_group_id}/{id}")
+@router.put("/{template_group_id}/template/{id}")
 async def update(
         id: int,
         template_group_id: int,
@@ -36,21 +36,21 @@ async def update(
     return await template_service.updateTemplate(id, template_name, image, field, template_group_id, session)
 
 
-@router.get("/image/{template_group_id}/{id}")
+@router.get("/{template_group_id}/image/{id}")
 def readImageById(
         id: int,
         template_group_id: int,
         session: Session = Depends(get_session)
     ):
-    post = template_service.findImageById(id, template_group_id, session)
     try:
+        post = template_service.findImageById(id, template_group_id, session)
         image_data = base64.b64decode(post.image)
     except Exception:
-        return {"error": "이미지 디코딩 실패"}
+        return {"error": "템플릿을 찾을 수 없습니다"}
 
     return Response(content=image_data, media_type=post.content_type)
 
-@router.get("/{template_group_id}/{id}", response_model=TemplatePartialRead)
+@router.get("/{template_group_id}/template/{id}", response_model=TemplatePartialRead)
 def readFieldsById(
         id: int,
         template_group_id: int,
@@ -62,7 +62,7 @@ def readFieldsById(
     return template
 
 
-@router.get("", response_model=TemplateListResponse)
+@router.get("/template", response_model=TemplateListResponse)
 def readAll(
         session: Session = Depends(get_session),
         offset: int = 1,
@@ -70,7 +70,7 @@ def readAll(
     ):
     return template_service.findAll(session, offset, limit)
 
-@router.get("/{template_group_id}", response_model=TemplateListResponse)
+@router.get("/{template_group_id}/template", response_model=TemplateListResponse)
 def readByGroupId(
         template_group_id: int,
         session: Session = Depends(get_session),
@@ -79,7 +79,7 @@ def readByGroupId(
     ):
     return template_service.findByGroupId(template_group_id, session, offset, limit)
 
-@router.delete("/{template_group_id}/{id}")
+@router.delete("/{template_group_id}/template/{id}")
 def delete(
         id: int,
         template_group_id: int,

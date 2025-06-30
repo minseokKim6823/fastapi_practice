@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from model.settings import get_session
 
-router = APIRouter(prefix="/group", tags=["group"])
+router = APIRouter(prefix="/templategroup", tags=["templategroup"])
 
 @router.post("")
 async def create(
@@ -30,7 +30,8 @@ def read(session: Session = Depends(get_session), offset: int = 1, limit: int = 
 
 @router.delete("/{id}")
 def delete(
-        id: int,session: Session = Depends(get_session)
+        id: int,
+        session: Session = Depends(get_session)
     ):
     return template_group_service.deleteById(id, session)
 
