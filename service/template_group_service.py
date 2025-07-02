@@ -10,24 +10,24 @@ async def createTemplateGroup(
         group: createGroup,
         session: Session
     ):
-    isExist = session.query(TemplateContainer).filter(TemplateContainer.id == group.template_container_id).first()
+    # isExist = session.query(TemplateContainer).filter(TemplateContainer.id == group.template_container_id).first()
     # existing = session.query(TemplateGroup).filter(TemplateGroup.template_group_name == group.template_group_name).first()
     # if existing:
     #     return {"error": f"이미 존재하는 template_group_name: {group.template_group_name}"}
-    if not isExist:
-        return "해당 container를 찾을 수 없습니다."
-    else:
-        threshold = group.template_group_threshold if group.template_group_threshold is not None else 0.7
-        db_group = TemplateGroup(
-            template_group_name=group.template_group_name,
-            template_container_id=group.template_container_id,
-            template_group_threshold=threshold
-        )
+    # if not isExist:
+    #     return "해당 container를 찾을 수 없습니다."
+    # else:
+    threshold = group.template_group_threshold if group.template_group_threshold is not None else 0.7
+    db_group = TemplateGroup(
+        template_group_name=group.template_group_name,
+        template_container_id=group.template_container_id,
+        template_group_threshold=threshold
+    )
 
-        session.add(db_group)
-        session.commit()
-        session.refresh(db_group)
-        return {"id": db_group.id}
+    session.add(db_group)
+    session.commit()
+    session.refresh(db_group)
+    return {"id": db_group.id}
 
 def updateTemplateGroup(
         id: int,
@@ -37,10 +37,10 @@ def updateTemplateGroup(
     # existing = session.query(TemplateGroup).filter(TemplateGroup.template_group_name == updated_data.template_group_name).first()
     # if existing:
     #     return {"error": f"이미 존재하는 template_group_name: {updated_data.template_group_name}"}
-    isExist = session.query(TemplateContainer).filter(TemplateContainer.id == updated_data.template_container_id).first()
-    if not isExist:
-        return "해당 container를 찾을 수 없습니다."
-    else:
+    # isExist = session.query(TemplateContainer).filter(TemplateContainer.id == updated_data.template_container_id).first()
+    # if not isExist:
+    #     return "해당 container를 찾을 수 없습니다."
+    # else:
         threshold = updated_data.template_group_threshold if updated_data.template_group_threshold is not None else 0.7
         group = session.query(TemplateGroup).filter(TemplateGroup.id == id).first()
         group.template_group_name = updated_data.template_group_name

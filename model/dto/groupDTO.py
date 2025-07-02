@@ -10,5 +10,5 @@ class createGroup(BaseModel):
 
 class modifyGroup(SQLModel):
     template_group_name: str
-    template_container_id: Optional[int] = None
+    template_container_id: Optional[int]|None = None
     template_group_threshold: float | None = 0.7
