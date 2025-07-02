@@ -27,7 +27,7 @@ async def createTemplateGroup(
         session.add(db_group)
         session.commit()
         session.refresh(db_group)
-        return "저장 완료 "
+        return {"id": db_group.id}
 
 def updateTemplateGroup(
         id: int,
@@ -48,7 +48,7 @@ def updateTemplateGroup(
         group.template_container_id = updated_data.template_container_id
         session.commit()
         session.refresh(group)
-        return "수정완료"
+        return {"id": group.id}
 
 def findAllGroups(session: Session, page: int = 1, limit: int = 10):
     if page <= 0:
@@ -80,15 +80,15 @@ def findAllGroups(session: Session, page: int = 1, limit: int = 10):
         }
 
 def deleteById(id: int, session: Session):
-    post = session.query(TemplateGroup).filter(TemplateGroup.id == id).first()
+    group = session.query(TemplateGroup).filter(TemplateGroup.id == id).first()
 
-    if not post:
+    if not group:
         return "해당 그룹을 찾을 수 없습니다."
 
     try:
-        session.delete(post)
+        session.delete(group)
         session.commit()
-        return f"{id}번 그룹이 삭제되었습니다."
+        return {"id": group.id}
     except IntegrityError as e:
         session.rollback()
         return f"삭제 실패: 해당 그룹에 연결된 템플릿이 존재합니다. ({str(e.orig)})"

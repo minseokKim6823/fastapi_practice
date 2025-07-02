@@ -11,21 +11,21 @@ async def createTemplateContainer(
     # if existing:
     #     return {"error": f"이미 존재하는 template_container_name: {template_container_name}"}
 
-    db_board = TemplateContainer(
+    container = TemplateContainer(
         template_container_name=template_container_name
     )
-    session.add(db_board)
+    session.add(container)
     session.commit()
-    return "저장 완료 "
+    return {"id": container.id}
 
 def updateTemplateContainer(
         id: int,
         template_container_name:str,
         session: Session
     ):
-    post = session.query(TemplateContainer).filter(TemplateContainer.id == id).first()
+    container = session.query(TemplateContainer).filter(TemplateContainer.id == id).first()
     # 있는지
-    if not post:
+    if not container:
         return "해당 컨테이너를 찾을 수 없습니다."
 
     # 중복방지
@@ -33,11 +33,11 @@ def updateTemplateContainer(
     if existing:
         return {"error": f"다른 게시물에서 이미 사용 중인 template_container_name 입니다 : {template_container_name}"}
 
-    post.template_container_name = template_container_name
+    container.template_container_name = template_container_name
 
     session.commit()
-    session.refresh(post)
-    return "수정완료"
+    session.refresh(container)
+    return {"id": container.id}
 
 def findAllContainers(session: Session, page: int = 1, limit: int = 10):
     if page <= 0:
@@ -56,10 +56,10 @@ def findAllContainers(session: Session, page: int = 1, limit: int = 10):
         }
 
 def deleteById(id: int, session: Session):
-    post = session.query(TemplateContainer).filter(TemplateContainer.id == id).first()
-    if post:
-        session.delete(post)
+    container = session.query(TemplateContainer).filter(TemplateContainer.id == id).first()
+    if container:
+        session.delete(container)
         session.commit()
-        return f"{id}번 컨테이너가 삭제되었습니다."
+        return {"id": container.id}
     else:
         return "해당 컨테이너를 찾을 수 없습니다."

@@ -30,16 +30,16 @@ async def createTemplate(
     encoded = base64.b64encode(content).decode()
     content_type = image.content_type
 
-    db_board = Template(
+    template = Template(
         template_name=template_name,
         image=encoded,
         content_type=content_type,
         template_group_id=template_group_id,
         field=parsed_field
     )
-    session.add(db_board)
+    session.add(template)
     session.commit()
-    return "저장완료"
+    return {"id": template.id}
 
 
 async def updateTemplate(
@@ -50,11 +50,11 @@ async def updateTemplate(
         template_group_id: int,
         session: Session
     ):
-    post = session.query(Template).filter(
+    template = session.query(Template).filter(
         Template.id == id and
         Template.template_group_id == template_group_id
     ).first()
-    if not (post.template_group_id == template_group_id and post.id ==id):
+    if not (template.template_group_id == template_group_id and template.id ==id):
         return "해당 정보에 맞는 템플릿이 없습니다."
     if not field:
         parsed_field = None
@@ -68,23 +68,23 @@ async def updateTemplate(
     if image and image.filename:
         content = await image.read()
         if content:      #사진 없으면 그전 사진
-            post.image = base64.b64encode(content).decode()
-            post.content_type = image.content_type
+            template.image = base64.b64encode(content).decode()
+            template.content_type = image.content_type
 
-    post.field =parsed_field
-    post.template_name = template_name
+    template.field =parsed_field
+    template.template_name = template_name
     session.commit()
-    session.refresh(post)
-    return "수정완료"
+    session.refresh(template)
+    return {"id": template.id}
 
 def findImageById(id: int, template_group_id: int, session: Session):
-    post = session.query(Template).filter(
+    db_board = session.query(Template).filter(
         Template.id == id and
         Template.template_group_id == template_group_id
         ).first()
-    if not (post.template_group_id == template_group_id and post.id ==id):
+    if not (db_board.template_group_id == template_group_id and db_board.id ==id):
         return "해당 정보에 맞는 템플릿이 없습니다."
-    return post
+    return db_board
 
 def findFieldsById(id: int, template_group_id: int, session: Session):
     post = session.query(Template).filter(
@@ -166,16 +166,16 @@ def findByGroupId(template_group_id: int, session: Session, page: int = 1, limit
         }
 
 def deleteById(id: int, template_group_id: int, session: Session):
-    post = session.query(Template).filter(
+    template = session.query(Template).filter(
         Template.id == id and
         Template.template_group_id == template_group_id
         ).first()
-    if not (post.template_group_id == template_group_id and post.id == id):
+    if not (template.template_group_id == template_group_id and template.id == id):
         return "해당 정보에 맞는 템플릿이 없습니다."
-    if post:
-        session.delete(post)
+    if template:
+        session.delete(template)
         session.commit()
-        return f"{id}번 게시물이 삭제되었습니다"
+        return {"id": template.id}
     else:
         return "해당 템플릿을 찾을 수 없습니다"
 
