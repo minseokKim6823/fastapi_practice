@@ -77,3 +77,46 @@ class TemplateClassifier:
             }
 
         return {"matched": False, "similarity": None, "threshold": None}
+
+    def classify_image_container_version(self, id: int, image_bytes: bytes, templates: List[Template]):
+        try:
+            uploaded_image = Image.open(BytesIO(image_bytes))
+            uploaded_hash = imagehash.average_hash(uploaded_image, hash_size=128)
+        except Exception as e:
+            return {"error": f"이미지를 열 수 없습니다: {e}"}
+
+        best_match = None
+        best_score = -1.0
+        best_threshold = 0.7
+
+        for template in templates:
+            try:
+                decoded = base64.b64decode(template.image)
+                template_image = Image.open(BytesIO(decoded))
+                similarity = calc_hash_similarity(uploaded_hash, template_image)
+
+                group = (
+                    self.session.query(TemplateGroup)
+                    .filter(TemplateGroup.id == template.template_group_id)
+                    .first()
+                )
+                threshold = group.template_group_threshold if group else 0.7
+
+                if similarity >= threshold and similarity > best_score:
+                    best_score = similarity
+                    best_match = template
+                    best_threshold = threshold
+
+            except Exception as e:
+                print(f"[!] 이미지 비교 실패 - Template ID {id}: {e}")
+
+        if best_match:
+            return {
+                "matched": True,
+                "template_id": best_match.id,
+                "template_name": best_match.template_name,
+                "similarity": round(best_score, 4),
+                "threshold": round(best_threshold, 2),
+            }
+
+        return {"matched": False, "similarity": None, "threshold": None}
