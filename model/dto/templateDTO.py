@@ -7,6 +7,7 @@ class TemplateCreate(BaseModel):
     template_name: str
 
 class TemplatePartialRead(BaseModel):
+    id:int
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     field: Optional[list] = None
