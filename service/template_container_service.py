@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+
 from sqlalchemy.orm import Session
 
 from model.entity.template_container import TemplateContainer
@@ -26,12 +28,13 @@ def updateTemplateContainer(
     container = session.query(TemplateContainer).filter(TemplateContainer.id == id).first()
     # 있는지
     if not container:
-        return "해당 컨테이너를 찾을 수 없습니다."
+        raise HTTPException(status_code=400, detail="해당 컨테이너를 찾을 수 없습니다.")
+
 
     # 중복방지
     existing = session.query(TemplateContainer).filter(TemplateContainer.template_container_name == template_container_name, TemplateContainer.id != id).first()
     if existing:
-        return {"error": f"다른 게시물에서 이미 사용 중인 template_container_name 입니다 : {template_container_name}"}
+        raise HTTPException(status_code=400, detail= f"다른 게시물에서 이미 사용 중인 template_container_name 입니다 : {template_container_name}")
 
     container.template_container_name = template_container_name
 
@@ -62,4 +65,4 @@ def deleteById(id: int, session: Session):
         session.commit()
         return {"id": container.id}
     else:
-        return "해당 컨테이너를 찾을 수 없습니다."
+        raise HTTPException(status_code = 400, detail = "해당 컨테이너를 찾을 수 없습니다.")

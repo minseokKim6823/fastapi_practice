@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -83,15 +85,15 @@ def deleteById(id: int, session: Session):
     group = session.query(TemplateGroup).filter(TemplateGroup.id == id).first()
 
     if not group:
-        return "해당 그룹을 찾을 수 없습니다."
-
+        raise HTTPException(status_code=400, detail="해당 그룹을 찾을 수 없습니다.")
     try:
         session.delete(group)
         session.commit()
         return {"id": group.id}
     except IntegrityError as e:
         session.rollback()
-        return f"삭제 실패: 해당 그룹에 연결된 템플릿이 존재합니다. ({str(e.orig)})"
+        raise HTTPException(status_code=400, detail="삭제 실패: 해당 그룹에 연결된 템플릿이 존재합니다.")
     except Exception as e:
         session.rollback()
-        return f"알 수 없는 오류로 삭제에 실패했습니다: {str(e)}"
+        raise HTTPException(status_code=400, detail=f"삭제 실패: {str(e)}")
+

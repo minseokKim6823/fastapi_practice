@@ -2,7 +2,7 @@ import base64
 import json
 from typing import Optional
 
-from fastapi import File, UploadFile
+from fastapi import File, UploadFile, HTTPException
 from fastapi.responses import Response
 
 from sqlalchemy.orm import Session
@@ -55,7 +55,7 @@ async def updateTemplate(
         Template.template_group_id == template_group_id
     ).first()
     if not (template.template_group_id == template_group_id and template.id ==id):
-        return "해당 정보에 맞는 템플릿이 없습니다."
+        raise HTTPException(status_code=400, detail="해당 정보에 맞는 템플릿이 없습니다.")
     if not field:
         parsed_field = None
     else:
@@ -83,7 +83,7 @@ def findImageById(id: int, template_group_id: int, session: Session):
         Template.template_group_id == template_group_id
         ).first()
     if not (db_board.template_group_id == template_group_id and db_board.id ==id):
-        return "해당 정보에 맞는 템플릿이 없습니다."
+        raise HTTPException(status_code=400, detail="해당 정보에 맞는 템플릿이 없습니다.")
     return db_board
 
 def findFieldsById(id: int, template_group_id: int, session: Session):
@@ -94,13 +94,13 @@ def findFieldsById(id: int, template_group_id: int, session: Session):
     if not post:
         return None
     if not (post.template_group_id == template_group_id and post.id == id):
-        return "해당 정보에 맞는 템플릿이 없습니다."
+        raise HTTPException(status_code=400, detail="해당 정보에 맞는 템플릿이 없습니다.")
 
     template_group = session.query(TemplateGroup).filter(
         TemplateGroup.id == post.template_group_id
     ).first()
     if not (post.template_group_id == template_group_id and post.id == id):
-        return "해당 정보에 맞는 템플릿이 없습니다."
+        raise HTTPException(status_code=400, detail="해당 정보에 맞는 템플릿이 없습니다.")
 
     return{
         "id":post.id,
@@ -170,13 +170,17 @@ def deleteById(id: int, template_group_id: int, session: Session):
         Template.id == id and
         Template.template_group_id == template_group_id
         ).first()
-    if not (template.template_group_id == template_group_id and template.id == id):
-        return "해당 정보에 맞는 템플릿이 없습니다."
+
     if template:
         session.delete(template)
         session.commit()
         return {"id": template.id}
     else:
-        return "해당 템플릿을 찾을 수 없습니다"
+        raise HTTPException(status_code=400, detail="해당 정보에 맞는 템플릿이 없습니다.")
+
+    if not (template.template_group_id == template_group_id and template.id == id):
+        raise HTTPException(status_code=400, detail="해당 정보에 맞는 템플릿이 없습니다.")
+    else:
+        raise HTTPException(status_code=400, detail="해당 템플릿을 찾을 수 없습니다.")
 
 
