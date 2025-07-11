@@ -7,7 +7,7 @@ from controller.template_router import router as template_router
 from controller.template_run_router import router as template_run_router
 from controller.template_group_router import router as template_group_router
 
-app = FastAPI(root_path="/fastapi")
+app = FastAPI(root_path="/template")
 
 
 @app.on_event("startup")
