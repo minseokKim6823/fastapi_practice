@@ -31,9 +31,10 @@ async def update(
         template_name: str = Form(...),
         image: Optional[UploadFile] = File(None),
         field: Optional[str] = Form(None),
+        new_template_group_id: Optional[int] = Form(None),
         session: Session = Depends(get_session)
     ):
-    return await template_service.updateTemplate(id, template_name, image, field, template_group_id, session)
+    return await template_service.updateTemplate(id, template_name, image, field, template_group_id, new_template_group_id, session)
 
 
 @router.get("/{template_group_id}/image/{id}")

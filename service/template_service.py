@@ -48,6 +48,7 @@ async def updateTemplate(
         image: Optional[UploadFile],
         field: str | None,
         template_group_id: int,
+        new_template_group_id: int | None,
         session: Session
     ):
     template = session.query(Template).filter(
@@ -70,6 +71,8 @@ async def updateTemplate(
         if content:      #사진 없으면 그전 사진
             template.image = base64.b64encode(content).decode()
             template.content_type = image.content_type
+    if new_template_group_id:
+        template.template_group_id = new_template_group_id
 
     template.field =parsed_field
     template.template_name = template_name
