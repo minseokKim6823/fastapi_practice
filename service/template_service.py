@@ -3,11 +3,9 @@ import json
 from typing import Optional
 
 from fastapi import File, UploadFile
-from fastapi.responses import Response
 
 from sqlalchemy.orm import Session
 from model.entity.template import Template
-# from model.entity.template_container import TemplateContainer
 from model.entity.template_group import TemplateGroup
 
 
@@ -31,10 +29,10 @@ async def createTemplate(
     content_type = image.content_type
 
     template = Template(
+        template_group_id=template_group_id,
         template_name=template_name,
         image=encoded,
         content_type=content_type,
-        template_group_id=template_group_id,
         field=parsed_field
     )
     session.add(template)
