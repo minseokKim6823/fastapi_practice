@@ -1,9 +1,14 @@
-from typing import Annotated, List
-from fastapi import UploadFile,File
-from paddleocr import PaddleOCR
 import cv2
 import numpy as np
-import logging
+from typing import List
+from fastapi import UploadFile,Depends
+from paddleocr import PaddleOCR
+from PIL import Image
+from io import BytesIO
+
+
+
+from boundary_ocr.utils.images_size import get_image_size_from_base64
 
 ocr = PaddleOCR(
     lang="korean",
@@ -13,8 +18,8 @@ ocr = PaddleOCR(
 )
 
 async def upload_image_and_classify_by_paddleocr(
-    images_list: List[UploadFile],
-    boundary_field: List[int]
+        images_list: List[UploadFile],
+        boundary_field: List[int],
 ) -> List[dict]:
     results = []
     x, y, w, h = boundary_field
@@ -27,6 +32,13 @@ async def upload_image_and_classify_by_paddleocr(
             results.append({"result": None, "error": "이미지를 열 수 없습니다"})
             continue
 
+        pil_img = Image.open(BytesIO(image_bytes))
+        img_width, img_height = pil_img.size
+
+        x= int(x * img_width)
+        y = int(y * img_height)
+        w = int(w * img_width)
+        h = int(h * img_height)
 
         cropped_img = img[y:y + h, x:x + w]
         if cropped_img is None or cropped_img.size == 0:

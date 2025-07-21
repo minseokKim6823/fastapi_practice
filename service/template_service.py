@@ -1,9 +1,8 @@
 import base64
 import json
+from sqlalchemy import and_
 from typing import Optional
-
-from fastapi import File, UploadFile
-
+from fastapi import UploadFile
 from sqlalchemy.orm import Session
 from model.entity.template import Template
 from model.entity.template_group import TemplateGroup

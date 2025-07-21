@@ -12,13 +12,6 @@ async def createTemplateGroup(
         group: createGroup,
         session: Session
     ):
-    # isExist = session.query(TemplateContainer).filter(TemplateContainer.id == group.template_container_id).first()
-    # existing = session.query(TemplateGroup).filter(TemplateGroup.template_group_name == group.template_group_name).first()
-    # if existing:
-    #     return {"error": f"이미 존재하는 template_group_name: {group.template_group_name}"}
-    # if not isExist:
-    #     return "해당 container를 찾을 수 없습니다."
-    # else:
     threshold = group.template_group_threshold if group.template_group_threshold is not None else 0.7
     db_group = TemplateGroup(
         template_group_name=group.template_group_name,
