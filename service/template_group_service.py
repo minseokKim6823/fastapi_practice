@@ -37,7 +37,7 @@ async def createTemplateGroup(
     print("db_group.bounding_field : ",db_group.bounding_field)
     return {"id": db_group.id,"bounding_field": db_group.bounding_field}
 
-def updateTemplateGroup(
+async def updateTemplateGroup(
         id: int,
         updated_data: modifyGroup,
         session: Session

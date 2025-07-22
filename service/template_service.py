@@ -50,50 +50,42 @@ async def createTemplate(
 
 
 async def updateTemplate(
-        id: int,
-        template_name: str,
-        image: Optional[UploadFile],
-        field: str | None,
-        template_group_id: int,
-        new_template_group_id: int | None,
-        bounding_value: Optional[List[List[str]]],
-        session: Session
-    ):
-    template = session.query(Template).filter(
-        Template.id == id and
-        Template.template_group_id == template_group_id
-    ).first()
-    if not (template.template_group_id == template_group_id and template.id ==id):
-        return "해당 정보에 맞는 템플릿이 없습니다."
-    if not field:
-        parsed_field = None
-    else:
-        try:
-            parsed_field = json.loads(field)
-        except json.JSONDecodeError:
-            parsed_field = None
+    id: int,
+    template_name: str,
+    image: Optional[UploadFile],
+    field: Optional[str],
+    template_group_id: int,
+    new_template_group_id: Optional[int],
+    bounding_value: Optional[str],
+    session: Session
+):
+    template = session.query(Template).filter_by(id=id, template_group_id=template_group_id).first()
+    if not template:
+        return {"error": "템플릿을 찾을 수 없습니다."}
 
-    # 이미지가 실제로 들어왔는지 확인
-    if image and image.filename:
-        content = await image.read()
-        if content:      #사진 없으면 그전 사진
-            template.image = base64.b64encode(content).decode()
-            template.content_type = image.content_type
+    template.template_name = template_name
     if new_template_group_id:
         template.template_group_id = new_template_group_id
 
+    if image:
+        content = await image.read()
+        template.image = base64.b64encode(content).decode()
+        template.content_type = image.content_type
+
+    if field:
+        try:
+            template.field = json.loads(field)
+        except Exception:
+            template.field = None
+
     if bounding_value:
         try:
-            bounding_value = convert_list_to_json_dict(bounding_value)
-        except json.JSONDecodeError:
-            print("JSON 변환 오류 발생")
+            template.bounding_value = json.loads(bounding_value)
+        except Exception:
+            template.bounding_value = None
 
-    template.field =parsed_field
-    template.bounding_value = bounding_value
-    template.template_name = template_name
     session.commit()
-    session.refresh(template)
-    return {"id": template.id}
+    return {"id": template.id, "message": "업데이트 완료"}
 
 def findImageById(id: int, template_group_id: int, session: Session):
     db_board = session.query(Template).filter(

@@ -1,14 +1,12 @@
 import json
-import base64
 
 from io import BytesIO
 from typing import Optional
 from PIL import Image
 
-from model.dto.groupDTO import createGroup
+from model.dto.groupDTO import createGroup, modifyGroup
 
 from fastapi import APIRouter, Depends, UploadFile, File, Form
-from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from service import template_service, template_group_service
@@ -20,47 +18,45 @@ router = APIRouter(prefix="", tags=["template"])
 def get_image_size_from_uploadfile(upload_file: UploadFile) -> tuple[int, int]:
     contents = upload_file.file.read()
     image = Image.open(BytesIO(contents))
-    upload_file.file.seek(0)  # ✅ 읽은 뒤 반드시 되돌려주기
+    upload_file.file.seek(0)
     return image.width, image.height
+
+def normalize_boxes(boxes, width, height):
+    if not boxes:
+        return []
+    return [
+        [x / width, y / height, w / width, h / height]
+        for x, y, w, h in boxes
+    ]
+
+def parse_and_normalize_fields(field_str, width, height):
+    fields = json.loads(field_str) if field_str else []
+    if width and height:
+        for f in fields:
+            if "bbox" in f:
+                x, y, w, h = f["bbox"]
+                f["bbox"] = [x / width, y / height, w / width, h / height]
+    return json.dumps(fields, ensure_ascii=False)
 
 @router.post("/template")
 async def create(
-        template_group_name: str,
-        bounding_field:Optional[str] = Form(None),
-        template_container_id: int | None = None,
-        template_group_threshold: float | None = 0.7,
-        template_group_id: int| None = Form(None),
-        template_name: str = Form(...),
-        image: UploadFile = File(...),
-        field: Optional[str] = Form(None),
-        bounding_value: Optional[str]= Form(None),
-        session: Session = Depends(get_session)
-    ):
+    template_group_name: str,
+    bounding_field: Optional[str] = Form(None),
+    template_container_id: Optional[int] = None,
+    template_group_threshold: Optional[float] = 0.7,
+    template_group_id: Optional[int] = Form(None),
+    template_name: str = Form(...),
+    image: UploadFile = File(...),
+    field: Optional[str] = Form(None),
+    bounding_value: Optional[str] = Form(None),
+    session: Session = Depends(get_session)
+):
+
     width, height = get_image_size_from_uploadfile(image)
-
     bounding_field_list = json.loads(bounding_field) if bounding_field else None
-    normalized_boxes = []
-    for box in bounding_field_list:
-        x, y, w, h = box
-        normalized_boxes.append([
-            x / width,
-            y / height,
-            w / width,
-            h / height
-        ])
-    parsed_fields = json.loads(field) if field else []
-    for f in parsed_fields:
-        if "bbox" in f:
-            x, y, w, h = f["bbox"]
-            f["bbox"] = [
-                x / width,
-                y / height,
-                w / width,
-                h / height
-            ]
-    field_json_str = json.dumps(parsed_fields, ensure_ascii=False)
+    normalized_boxes = normalize_boxes(bounding_field_list, width, height)
+    field_json_str = parse_and_normalize_fields(field, width, height)
 
-    # 3. template_group 생성
     group_dto = createGroup(
         template_group_name=template_group_name,
         template_container_id=template_container_id,
@@ -69,39 +65,43 @@ async def create(
     )
     await template_group_service.createTemplateGroup(group_dto, session)
 
-    # 4. template 생성
     return await template_service.createTemplate(
         template_name, image, field_json_str,
-        template_group_id, bounding_value,
-        session
+        template_group_id, bounding_value, session
     )
 @router.put("/{template_group_id}/template/{id}")
 async def update(
         id: int,
         template_group_id: int,
+        template_group_name: str,
+        bounding_field: Optional[str] = Form(None),
+        template_container_id: Optional[int] = None,
+        template_group_threshold: Optional[float] = 0.7,
         template_name: str = Form(...),
         image: Optional[UploadFile] = File(None),
         field: Optional[str] = Form(None),
         new_template_group_id: Optional[int] = Form(None),
-        bounding_value = Form(None),
+        bounding_value: Optional[str] = Form(None),
         session: Session = Depends(get_session)
-    ):
-    return await template_service.updateTemplate(id, template_name, image, field, template_group_id, new_template_group_id, bounding_value, session)
+):
+    width, height = get_image_size_from_uploadfile(image) if image else (None, None)
+    bounding_field_list = json.loads(bounding_field) if bounding_field else None
+    normalized_boxes = normalize_boxes(bounding_field_list, width, height)
+    field_json_str = parse_and_normalize_fields(field, width, height)
 
+    group_dto = modifyGroup(
+        template_group_name=template_group_name,
+        template_container_id=template_container_id,
+        bounding_field=normalized_boxes,
+        template_group_threshold=template_group_threshold
+    )
+    await template_group_service.updateTemplateGroup(template_group_id, group_dto, session)
 
-@router.get("/{template_group_id}/image/{id}")
-def readImageById(
-        id: int,
-        template_group_id: int,
-        session: Session = Depends(get_session)
-    ):
-    try:
-        post = template_service.findImageById(id, template_group_id, session)
-        image_data = base64.b64decode(post.image)
-    except Exception:
-        return {"error": "템플릿을 찾을 수 없습니다"}
-
-    return Response(content=image_data, media_type=post.content_type)
+    return await template_service.updateTemplate(
+        id, template_name, image,
+        field_json_str, template_group_id,
+        new_template_group_id, bounding_value, session
+    )
 
 @router.get("/{template_group_id}/template/{id}", response_model=TemplatePartialRead)
 def readFieldsById(
