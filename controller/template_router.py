@@ -1,5 +1,5 @@
 import base64
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from fastapi.responses import Response
@@ -9,20 +9,19 @@ from service import template_service
 from model.dto.templateDTO import TemplatePartialRead, TemplateListResponse
 from model.settings import get_session
 
-# from fastapi.security import OAuth2PasswordBearer
-# from service.login_service import get_current_user
 
 router = APIRouter(prefix="", tags=["template"])
 
-@router.post("/{template_group_id}/template")
+@router.post("/template")
 async def create(
         template_group_id: int,
         template_name: str = Form(...),
         image: UploadFile = File(...),
         field: Optional[str] = Form(None),
+        bounding_value = Form(None),
         session: Session = Depends(get_session)
     ):
-    return await template_service.createTemplate(template_name, image, field, template_group_id, session)
+    return await template_service.createTemplate(template_name, image, field, template_group_id, bounding_value,  session)
 
 @router.put("/{template_group_id}/template/{id}")
 async def update(
@@ -32,9 +31,10 @@ async def update(
         image: Optional[UploadFile] = File(None),
         field: Optional[str] = Form(None),
         new_template_group_id: Optional[int] = Form(None),
+        bounding_value = Form(None),
         session: Session = Depends(get_session)
     ):
-    return await template_service.updateTemplate(id, template_name, image, field, template_group_id, new_template_group_id, session)
+    return await template_service.updateTemplate(id, template_name, image, field, template_group_id, new_template_group_id, bounding_value, session)
 
 
 @router.get("/{template_group_id}/image/{id}")

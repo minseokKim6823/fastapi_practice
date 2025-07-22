@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Dict, Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -8,11 +8,10 @@ class TemplateCreate(BaseModel):
 
 class TemplatePartialRead(BaseModel):
     id:int
+    template_name: str
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     field: Optional[list] = None
-    template_name: str
-    template_group_id: Optional[int] = None
     template_group_name: Optional[str] = None
 
     class Config:

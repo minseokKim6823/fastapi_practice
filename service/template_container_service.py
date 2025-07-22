@@ -9,10 +9,6 @@ async def createTemplateContainer(
         template_container_name: str,
         session: Session
     ):
-    # existing = session.query(TemplateContainer).filter(TemplateContainer.template_container_name == template_container_name).first()
-    # if existing:
-    #     return {"error": f"이미 존재하는 template_container_name: {template_container_name}"}
-
     container = TemplateContainer(
         template_container_name=template_container_name
     )

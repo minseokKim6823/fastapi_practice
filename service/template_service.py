@@ -1,11 +1,13 @@
 import base64
 import json
-from sqlalchemy import and_
-from typing import Optional
+from typing import Optional, List
+
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
+
 from model.entity.template import Template
 from model.entity.template_group import TemplateGroup
+from utils.JSON_converter import convert_list_to_json_dict
 
 
 async def createTemplate(
@@ -13,6 +15,7 @@ async def createTemplate(
         image: UploadFile,
         field: str | None,
         template_group_id: int,
+        bounding_value: Optional[List[List[str]]],
         session: Session
     ):
     if not field:
@@ -27,11 +30,18 @@ async def createTemplate(
     encoded = base64.b64encode(content).decode()
     content_type = image.content_type
 
+    if bounding_value:
+        try:
+            bounding_value = convert_list_to_json_dict(bounding_value)
+        except json.JSONDecodeError:
+            print("JSON 변환 오류 발생")
+
     template = Template(
         template_group_id=template_group_id,
         template_name=template_name,
         image=encoded,
         content_type=content_type,
+        bounding_value=bounding_value,
         field=parsed_field
     )
     session.add(template)
@@ -46,6 +56,7 @@ async def updateTemplate(
         field: str | None,
         template_group_id: int,
         new_template_group_id: int | None,
+        bounding_value: Optional[List[List[str]]],
         session: Session
     ):
     template = session.query(Template).filter(
@@ -71,7 +82,14 @@ async def updateTemplate(
     if new_template_group_id:
         template.template_group_id = new_template_group_id
 
+    if bounding_value:
+        try:
+            bounding_value = convert_list_to_json_dict(bounding_value)
+        except json.JSONDecodeError:
+            print("JSON 변환 오류 발생")
+
     template.field =parsed_field
+    template.bounding_value = bounding_value
     template.template_name = template_name
     session.commit()
     session.refresh(template)
@@ -108,8 +126,10 @@ def findFieldsById(id: int, template_group_id: int, session: Session):
         "updated_at": post.updated_at,
         "template_name": post.template_name,
         "field": post.field,
-        "template_group_id": post.template_group_id if template_group else None,
         "template_group_name": template_group.template_group_name if template_group else None,
+        "bounding_value": post.bounding_value,
+        "template_group_bounding_field": template_group.bounding_field,
+        "template_group_id": template_group.id,
     }
 
 

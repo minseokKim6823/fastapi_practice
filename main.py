@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+# from controller.bounding_box_router import router as bounding_box_router
 from controller.template_container_router import router as template_container_router
 from model.settings import create_db_and_tables
 from service.update_time_service import register_timestamp_events
@@ -20,8 +21,8 @@ def on_startup():
 app.include_router(template_router)
 app.include_router(template_group_router)
 app.include_router(template_container_router)
-# app.include_router(login_router)
-# app.include_router(account_router)
+
+# app.include_router(bounding_box_router)
 app.include_router(template_run_router)
 app.include_router(classify_router)
 app.include_router(boundary_router)
