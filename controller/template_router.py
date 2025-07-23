@@ -99,7 +99,6 @@ async def update(
         template_group_threshold=template_group_threshold
     )
     await template_group_service.updateTemplateGroup(template_group_id, group_dto, session)
-    print("tt:",template_name)
     return await template_service.updateTemplate(
         id, template_name, encoded_image, content_type, field_json_str,
         template_group_id, new_template_group_id, normalized_bv_boxes, session

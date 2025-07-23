@@ -26,7 +26,6 @@ async def createTemplate(
     else:
         parsed_field = None
 
-
     template = Template(
         template_group_id=template_group_id,
         template_name=template_name,
