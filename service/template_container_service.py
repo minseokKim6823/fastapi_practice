@@ -22,12 +22,9 @@ def updateTemplateContainer(
         session: Session
     ):
     container = session.query(TemplateContainer).filter(TemplateContainer.id == id).first()
-    # 있는지
     if not container:
         raise HTTPException(status_code=400, detail="해당 컨테이너를 찾을 수 없습니다.")
 
-
-    # 중복방지
     existing = session.query(TemplateContainer).filter(TemplateContainer.template_container_name == template_container_name, TemplateContainer.id != id).first()
     if existing:
         raise HTTPException(status_code=400, detail= f"다른 게시물에서 이미 사용 중인 template_container_name 입니다 : {template_container_name}")

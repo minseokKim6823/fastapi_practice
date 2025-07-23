@@ -7,9 +7,6 @@ from PIL import Image
 from io import BytesIO
 
 
-
-from boundary_ocr.utils.images_size import get_image_size_from_base64
-
 ocr = PaddleOCR(
     lang="korean",
     use_doc_orientation_classify=False,
@@ -35,7 +32,7 @@ async def upload_image_and_classify_by_paddleocr(
         pil_img = Image.open(BytesIO(image_bytes))
         img_width, img_height = pil_img.size
 
-        x= int(x * img_width)
+        x=  int(x * img_width)
         y = int(y * img_height)
         w = int(w * img_width)
         h = int(h * img_height)

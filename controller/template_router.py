@@ -1,42 +1,22 @@
+import base64
 import json
 
-from io import BytesIO
 from typing import Optional
-from PIL import Image
 
+from fastapi.responses import Response
 from model.dto.groupDTO import createGroup, modifyGroup
 
 from fastapi import APIRouter, Depends, UploadFile, File, Form
 from sqlalchemy.orm import Session
 
+from model.entity.template_group import TemplateGroup
 from service import template_service, template_group_service
-from model.dto.templateDTO import TemplatePartialRead, TemplateListResponse
+from model.dto.templateDTO import TemplateListResponse
 from model.settings import get_session
+from utils.JSON_converter import convert_list_to_json_dict
+from utils.image_utils import get_image_size_from_uploadfile, normalize_boxes, parse_and_normalize_fields
 
 router = APIRouter(prefix="", tags=["template"])
-
-def get_image_size_from_uploadfile(upload_file: UploadFile) -> tuple[int, int]:
-    contents = upload_file.file.read()
-    image = Image.open(BytesIO(contents))
-    upload_file.file.seek(0)
-    return image.width, image.height
-
-def normalize_boxes(boxes, width, height):
-    if not boxes:
-        return []
-    return [
-        [x / width, y / height, w / width, h / height]
-        for x, y, w, h in boxes
-    ]
-
-def parse_and_normalize_fields(field_str, width, height):
-    fields = json.loads(field_str) if field_str else []
-    if width and height:
-        for f in fields:
-            if "bbox" in f:
-                x, y, w, h = f["bbox"]
-                f["bbox"] = [x / width, y / height, w / width, h / height]
-    return json.dumps(fields, ensure_ascii=False)
 
 @router.post("/template")
 async def create(
@@ -51,59 +31,95 @@ async def create(
     bounding_value: Optional[str] = Form(None),
     session: Session = Depends(get_session)
 ):
-
+    content  = await image.read()
     width, height = get_image_size_from_uploadfile(image)
-    bounding_field_list = json.loads(bounding_field) if bounding_field else None
-    normalized_boxes = normalize_boxes(bounding_field_list, width, height)
+    encoded_image = base64.b64encode(content).decode()
+    content_type = image.content_type
+    bf_list  = json.loads(bounding_field) if bounding_field else None
+    normalized_bf_boxes = normalize_boxes(bf_list , width, height)
+    bv_list = json.loads(bounding_value) if bounding_value else None
+    normalized_bv_boxes = convert_list_to_json_dict(bv_list)
     field_json_str = parse_and_normalize_fields(field, width, height)
 
-    group_dto = createGroup(
-        template_group_name=template_group_name,
-        template_container_id=template_container_id,
-        bounding_field=normalized_boxes,
-        template_group_threshold=template_group_threshold
-    )
-    await template_group_service.createTemplateGroup(group_dto, session)
+    templategroup = session.query(TemplateGroup).filter(
+        TemplateGroup.id == template_group_id
+    ).first()
+
+    if not templategroup:
+        group_dto = createGroup(
+            template_group_name=template_group_name,
+            template_container_id=template_container_id,
+            bounding_field=normalized_bf_boxes,
+            template_group_threshold=template_group_threshold
+        )
+        await template_group_service.createTemplateGroup(group_dto, session)
+    else:
+        group_dto = modifyGroup(
+            template_group_name=template_group_name,
+            template_container_id=template_container_id,
+            bounding_field=normalized_bf_boxes,
+            template_group_threshold=template_group_threshold
+        )
+        await template_group_service.updateTemplateGroup(template_group_id, group_dto, session)
 
     return await template_service.createTemplate(
-        template_name, image, field_json_str,
-        template_group_id, bounding_value, session
+        template_name, encoded_image, content_type, field_json_str,
+        template_group_id, normalized_bv_boxes, session
     )
 @router.put("/{template_group_id}/template/{id}")
 async def update(
         id: int,
         template_group_id: int,
-        template_group_name: str,
+        template_group_name: Optional[str] = Form(...),
         bounding_field: Optional[str] = Form(None),
-        template_container_id: Optional[int] = None,
-        template_group_threshold: Optional[float] = 0.7,
+        template_container_id: Optional[int] =Form(None),
+        template_group_threshold: Optional[float] = Form(0.7),
         template_name: str = Form(...),
-        image: Optional[UploadFile] = File(None),
+        image: UploadFile = File(...),
         field: Optional[str] = Form(None),
         new_template_group_id: Optional[int] = Form(None),
         bounding_value: Optional[str] = Form(None),
         session: Session = Depends(get_session)
 ):
-    width, height = get_image_size_from_uploadfile(image) if image else (None, None)
-    bounding_field_list = json.loads(bounding_field) if bounding_field else None
-    normalized_boxes = normalize_boxes(bounding_field_list, width, height)
+    content  = await image.read()
+    width, height = get_image_size_from_uploadfile(image)
+    encoded_image = base64.b64encode(content).decode()
+    content_type = image.content_type
+
+    bf_list = json.loads(bounding_field) if bounding_field else None
+    normalized_bf_boxes = normalize_boxes(bf_list, width, height)
+    bv_list = json.loads(bounding_value) if bounding_value else None
+    normalized_bv_boxes = convert_list_to_json_dict(bv_list)
     field_json_str = parse_and_normalize_fields(field, width, height)
 
     group_dto = modifyGroup(
         template_group_name=template_group_name,
         template_container_id=template_container_id,
-        bounding_field=normalized_boxes,
+        bounding_field=normalized_bf_boxes,
         template_group_threshold=template_group_threshold
     )
     await template_group_service.updateTemplateGroup(template_group_id, group_dto, session)
-
+    print("tt:",template_name)
     return await template_service.updateTemplate(
-        id, template_name, image,
-        field_json_str, template_group_id,
-        new_template_group_id, bounding_value, session
+        id, template_name, encoded_image, content_type, field_json_str,
+        template_group_id, new_template_group_id, normalized_bv_boxes, session
     )
+@router.get("/{template_group_id}/image/{id}")
+def readImageById(
+        id: int,
+        template_group_id: int,
+        session: Session = Depends(get_session)
+    ):
+    try:
+        post = template_service.findImageById(id, template_group_id, session)
+        image_data = base64.b64decode(post.image)
+    except Exception:
+        return {"error": "템플릿을 찾을 수 없습니다"}
 
-@router.get("/{template_group_id}/template/{id}", response_model=TemplatePartialRead)
+
+    return Response(content=image_data, media_type=post.content_type)
+
+@router.get("/{template_group_id}/template/{id}")
 def readFieldsById(
         id: int,
         template_group_id: int,

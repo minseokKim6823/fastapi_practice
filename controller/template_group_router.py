@@ -22,12 +22,7 @@ def update(
     ):
     return template_group_service.updateTemplateGroup(id, template_group, session)
 
-# @router.get("/{id}")
-# def read_by_id(
-#         id: int,
-#         session: Session = Depends(get_session)
-#     ):
-#     return template_group_service.findGroupById(id, session)
+
 @router.get("")
 def read(session: Session = Depends(get_session), offset: int = 1, limit: int = 10):
     return template_group_service.findAllGroups(session, offset, limit)
