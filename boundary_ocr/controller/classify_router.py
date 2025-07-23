@@ -16,8 +16,6 @@ async def classify(
     if not group or not group.bounding_field:
         return {"error": "bounding_field가 없습니다."}
 
-    # 연결된 템플릿 조회
-
     template = session.query(Template).filter(Template.template_group_id == group.id).first()
     if not template or not template.bounding_value:
         return {"error": "연결된 템플릿 또는 bounding_value가 없습니다."}
